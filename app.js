@@ -6,6 +6,9 @@ const mongoSanitize = require("express-mongo-sanitize");
 const hpp = require("hpp");
 
 // routes import
+// user
+const authRoute = require("./routes/User/auth");
+
 // utility
 const aliveRoute = require("./routes/alive");
 const AppError = require("./utilities/appError");
@@ -39,6 +42,9 @@ app.use((req, res, next) => {
 app.use("/api", limiter); //Protection Against DDOS Attack
 
 // routes
+// user
+app.use("/api/auth", authRoute);
+
 // utility
 app.use("/api/alive", aliveRoute);
 

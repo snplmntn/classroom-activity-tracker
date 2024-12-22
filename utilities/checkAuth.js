@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const InvalidToken = require("../models/InvalidToken");
+const InvalidToken = require("../models/utilities/InvalidToken");
 const AppError = require("./appError");
 
 const verifyToken = async (req, res, next) => {

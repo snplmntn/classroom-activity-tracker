@@ -2,149 +2,73 @@ const Section = require("../../models/User/Section");
 const AppError = require("../../utilities/appError");
 const catchAsync = require("../../utilities/catchAsync");
 
-// Get Appointment by Id
+// Get Section by Id
 const section_get = catchAsync(async (req, res, next) => {
   const { id } = req.query;
 
-  let appointment;
+  let section;
   if (id) {
-    appointment = await Appointment.findOne({
+    section = await Section.findOne({
       _id: req.query.id,
     }).populate("userId");
   } else {
-    appointment = await Appointment.find().populate("userId");
+    section = await Section.find().populate("userId");
   }
 
-  if (!appointment) return next(new AppError("Appointment not found", 404));
+  if (!section) return next(new AppError("Section not found", 404));
 
-  return res.status(200).json(appointment);
+  return res.status(200).json(section);
 });
 
-// Get Appointment by UserId
-const section_user_get = catchAsync(async (req, res, next) => {
-  const { userId } = req.query;
-
-  const appointment = await Appointment.find(
-    userId && { userId: userId }
-  ).populate("userId");
-
-  if (!appointment) return next(new AppError("Appointment not found", 404));
-
-  return res.status(200).json(appointment);
-});
-
-// Create Appointment
+// Create Section
 const section_post = catchAsync(async (req, res, next) => {
-  const user = await User.findOne({ email: req.body.email });
+  const newSection = new Section(req.body);
 
-  if (!user) return next(new AppError("User not found", 404));
-  req.body.userId = user._id;
-  const newAppointment = new Appointment(req.body);
-
-  await newAppointment.save();
-
-  const users = await User.find({ role: "Obgyne" });
-  const recipientUserIds = users.map((user) => user._id);
-  const newNotification = new Notification({
-    senderName: "MatriCare",
-    message: `You have a new appointment with ${
-      req.body.patientName
-    } on ${formatAppointmentDate(req.body.date)}`,
-    recipientUserId: recipientUserIds,
-  });
-
-  await newNotification.save();
+  await newSection.save();
 
   return res
     .status(200)
-    .json({ message: "Appointment Successfully Created", newAppointment });
+    .json({ message: "Section Successfully Created", newSection });
 });
 
-// Update Appointment
+// Update Section
 const section_put = catchAsync(async (req, res, next) => {
-  const { id, userId } = req.query;
+  const { id } = req.query;
 
-  if (!id) return next(new AppError("Appointment identifier not found", 400));
+  if (!id) return next(new AppError("Section identifier not found", 400));
 
-  const updatedAppointment = await Appointment.findByIdAndUpdate(
+  const updatedSection = await Section.findByIdAndUpdate(
     id,
     { $set: req.body },
     { new: true }
   );
 
-  if (!updatedAppointment) {
-    return next(new AppError("Appointment not found", 404));
+  if (!updatedSection) {
+    return next(new AppError("Section not found", 404));
   }
 
-  const user = await User.findById(userId);
-
-  // Send Notification by Appointment Status
-  if (updatedAppointment.status === "Confirmed") {
-    const newNotification = new Notification({
-      senderId: user._id,
-      senderName: `${user.fullName}`,
-      senderPhoneNumber: `${user.phoneNumber}`,
-      message: `Your appointment scheduled on ${formatAppointmentDate(
-        updatedAppointment.date
-      )} has been confirmed!`,
-      recipientUserId: updatedAppointment.userId,
-    });
-
-    await newNotification.save();
-  } else if (updatedAppointment.status === "Cancelled") {
-    const newNotification = new Notification({
-      senderId: user._id,
-      senderName: `${user.fullName}`,
-      senderPhoneNumber: `${user.phoneNumber}`,
-      message: `Your appointment scheduled on ${formatAppointmentDate(
-        updatedAppointment.date
-      )} has been cancelled.`,
-      recipientUserId: updatedAppointment.userId,
-    });
-
-    await newNotification.save();
-  } else if (updatedAppointment.status === "Rescheduled") {
-    const newNotification = new Notification({
-      senderId: user._id,
-      senderName: `${user.fullName}`,
-      senderPhoneNumber: `${user.phoneNumber}`,
-      message: `The appointment has been moved. Please select another date and time that fits your schedule.`,
-      recipientUserId: updatedAppointment.userId,
-    });
-
-    await newNotification.save();
-
-    const users = await User.find({ role: "Assistant" }, "_id");
-    const recipientUserIds = users.map((user) => user._id);
-    await Notification.create({
-      senderName: `MatriCare`,
-      message: `There are changes in the Appointment. Look it up!`,
-      recipientUserId: recipientUserIds,
-    });
-  }
   return res
     .status(200)
-    .json({ message: "Appointment Updated Successfully", updatedAppointment });
+    .json({ message: "Section Updated Successfully", updatedSection });
 });
 
-// Delete Appointment
+// Delete Section
 const section_delete = catchAsync(async (req, res, next) => {
-  if (!req.query.id)
-    return next(new AppError("Appointment identifier not found", 400));
+  const { id } = req.query;
 
-  const deletedAppointment = await Appointment.findByIdAndDelete(req.query.id);
+  if (!id) return next(new AppError("Section identifier not found", 400));
 
-  if (!deletedAppointment)
-    return next(new AppError("Appointment not found", 404));
+  const deletedSection = await Section.findByIdAndDelete(req.query.id);
+
+  if (!deletedSection) return next(new AppError("Section not found", 404));
   return res
     .status(200)
-    .json({ message: "Appointment Successfully Deleted", deletedAppointment });
+    .json({ message: "Section Successfully Deleted", deletedSection });
 });
 
 module.exports = {
   section_get,
   section_post,
-  section_user_get,
   section_put,
   section_delete,
 };

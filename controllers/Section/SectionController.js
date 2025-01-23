@@ -69,7 +69,6 @@ const section_delete = catchAsync(async (req, res, next) => {
 module.exports = {
   section_get,
   section_post,
-  section_user_get,
   section_put,
   section_delete,
 };

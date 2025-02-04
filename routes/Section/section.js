@@ -2,16 +2,16 @@ const express = require("express");
 const router = express.Router();
 const SectionController = require("../../controllers/Section/SectionController");
 
-// Get User
+// Get Section
 router.get("/", SectionController.section_get);
 
-// Create User
-router.post("/a", SectionController.section_post);
+// Create Section
+router.post("/", SectionController.section_post);
 
-// Update User
+// Update Section
 router.put("/", SectionController.section_put);
 
-// Delete User
+// Delete Section
 router.delete("/", SectionController.section_delete);
 
 module.exports = router;

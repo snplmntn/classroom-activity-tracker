@@ -9,9 +9,9 @@ const section_get = catchAsync(async (req, res, next) => {
 
   if (!id) return next(new AppError("Section identifier not found", 400));
 
-  const section = await Section.findById(id).populate("students");
-
-  // .populate("subjects");
+  const section = await Section.findById(id)
+    .populate("students")
+    .populate("subjects");
 
   if (!section)
     return next(new AppError("Section not found. Invalid Section ID.", 404));
@@ -46,9 +46,12 @@ const section_put = catchAsync(async (req, res, next) => {
   const { sectionName, students, subjects } = req.body;
 
   if (!id) return next(new AppError("Section identifier not found", 400));
+  if (!sectionName && !students && !subjects)
+    return next(new AppError("No data to update", 400));
 
-  const section = await Section.findById(id).populate("students");
-  // .populate("subjects");
+  const section = await Section.findById(id)
+    .populate("students")
+    .populate("subjects");
 
   if (!section)
     return next(new AppError("Section not found. Invalid Section ID.", 404));

@@ -7,14 +7,15 @@ const hpp = require("hpp");
 
 // routes import
 // user
-const authRoute = require("./routes/User/auth");
-const userRoute = require("./routes/User/user");
+const authRoute = require("./routes/User/authRoute");
+const userRoute = require("./routes/User/userRoute");
 
 // section
-const sectionRoute = require("./routes/Section/section");
+const sectionRoute = require("./routes/Section/sectionRoute");
+const subjectRoute = require("./routes/Section/subjectRoute");
 
 // utility
-const aliveRoute = require("./routes/alive");
+const aliveRoute = require("./routes/aliveRoute");
 const AppError = require("./utilities/appError");
 
 // initializations
@@ -52,6 +53,7 @@ app.use("/api/user", userRoute);
 
 // section
 app.use("/api/section", sectionRoute);
+app.use("/api/subject", subjectRoute);
 
 // utility
 app.use("/api/alive", aliveRoute);

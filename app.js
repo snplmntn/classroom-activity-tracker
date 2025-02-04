@@ -14,6 +14,9 @@ const userRoute = require("./routes/User/userRoute");
 const sectionRoute = require("./routes/Section/sectionRoute");
 const subjectRoute = require("./routes/Section/subjectRoute");
 
+// main functionalities
+const todoRoute = require("./routes/Main/toDoRoute");
+
 // utility
 const aliveRoute = require("./routes/aliveRoute");
 const AppError = require("./utilities/appError");
@@ -54,6 +57,9 @@ app.use("/api/user", userRoute);
 // section
 app.use("/api/section", sectionRoute);
 app.use("/api/subject", subjectRoute);
+
+// main functionalities
+app.use("/api/todo", todoRoute);
 
 // utility
 app.use("/api/alive", aliveRoute);

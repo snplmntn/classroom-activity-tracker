@@ -58,7 +58,6 @@ const subject_put = catchAsync(async (req, res, next) => {
     return next(new AppError("No data to update", 400));
 
   const subject = await Subject.findById(id).populate("enrolledStudents");
-  // .populate("subjects");
 
   if (!subject)
     return next(new AppError("Subject not found. Invalid Subject ID.", 404));

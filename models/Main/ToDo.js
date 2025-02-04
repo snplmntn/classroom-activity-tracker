@@ -6,12 +6,14 @@ const toDoSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    description: String,
     deadline: {
       type: Date,
       required: true,
     },
     assignedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     submittedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    subject: { type: mongoose.Schema.Types.ObjectId, ref: "Subject" },
   },
   {
     timestamps: true,

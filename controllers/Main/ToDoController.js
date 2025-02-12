@@ -106,7 +106,7 @@ const toDo_put = catchAsync(async (req, res, next) => {
     .json({ message: "To Do Updated Successfully", updatedToDo });
 });
 
-// Update ToDo
+// Submit ToDo
 const toDo_submit = catchAsync(async (req, res, next) => {
   const { id, submit, unsubmit } = req.query;
   const { userId } = req.body;

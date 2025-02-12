@@ -11,6 +11,9 @@ router.post("/", ToDoController.toDo_post);
 // Update ToDo
 router.put("/", ToDoController.toDo_put);
 
+//Submit
+router.put("/s", ToDoController.toDo_submit);
+
 // Delete ToDo
 router.delete("/", ToDoController.toDo_delete);
 

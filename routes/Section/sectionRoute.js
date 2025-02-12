@@ -11,6 +11,9 @@ router.post("/", SectionController.section_post);
 // Update Section
 router.put("/", SectionController.section_put);
 
+// Enroll / Unenroll Section
+router.put("/e", SectionController.section_enroll);
+
 // Delete Section
 router.delete("/", SectionController.section_delete);
 

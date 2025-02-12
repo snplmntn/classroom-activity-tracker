@@ -6,6 +6,10 @@ const sectionSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    sectionCode: {
+      type: String,
+      required: true,
+    },
     students: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     subjects: [{ type: mongoose.Schema.Types.ObjectId, ref: "Subject" }],
   },

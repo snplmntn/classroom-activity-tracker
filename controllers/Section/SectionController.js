@@ -1,150 +1,184 @@
 const Section = require("../../models/User/Section");
+const User = require("../../models/User/User");
 const AppError = require("../../utilities/appError");
 const catchAsync = require("../../utilities/catchAsync");
+const crypto = require("crypto");
 
-// Get Appointment by Id
+const generateCode = (length) => {
+  // Generate Verification Token
+  return crypto.randomBytes(length / 2).toString("hex");
+};
+
+// Get Section by Id
 const section_get = catchAsync(async (req, res, next) => {
   const { id } = req.query;
 
-  let appointment;
-  if (id) {
-    appointment = await Appointment.findOne({
-      _id: req.query.id,
-    }).populate("userId");
-  } else {
-    appointment = await Appointment.find().populate("userId");
-  }
+  if (!id) return next(new AppError("Section identifier not found", 400));
 
-  if (!appointment) return next(new AppError("Appointment not found", 404));
+  const section = await Section.findById(id)
+    .populate("students")
+    .populate("subjects");
 
-  return res.status(200).json(appointment);
+  if (!section)
+    return next(new AppError("Section not found. Invalid Section ID.", 404));
+
+  return res.status(200).json(section);
 });
 
-// Get Appointment by UserId
-const section_user_get = catchAsync(async (req, res, next) => {
-  const { userId } = req.query;
-
-  const appointment = await Appointment.find(
-    userId && { userId: userId }
-  ).populate("userId");
-
-  if (!appointment) return next(new AppError("Appointment not found", 404));
-
-  return res.status(200).json(appointment);
-});
-
-// Create Appointment
+// Create Section
 const section_post = catchAsync(async (req, res, next) => {
-  const user = await User.findOne({ email: req.body.email });
+  const { userId } = req.query;
+  const isUserValid = await User.findById(userId);
 
-  if (!user) return next(new AppError("User not found", 404));
-  req.body.userId = user._id;
-  const newAppointment = new Appointment(req.body);
+  if (!isUserValid)
+    return next(new AppError("User not found. Invalid User ID.", 404));
 
-  await newAppointment.save();
+  req.body.sectionCode = generateCode(6).toUpperCase();
 
-  const users = await User.find({ role: "Obgyne" });
-  const recipientUserIds = users.map((user) => user._id);
-  const newNotification = new Notification({
-    senderName: "MatriCare",
-    message: `You have a new appointment with ${
-      req.body.patientName
-    } on ${formatAppointmentDate(req.body.date)}`,
-    recipientUserId: recipientUserIds,
+  const newSection = new Section({
+    ...req.body,
+    students: [userId],
   });
 
-  await newNotification.save();
+  await newSection.save();
 
   return res
     .status(200)
-    .json({ message: "Appointment Successfully Created", newAppointment });
+    .json({ message: "Section Successfully Created", newSection });
 });
 
-// Update Appointment
+// Update Section
 const section_put = catchAsync(async (req, res, next) => {
-  const { id, userId } = req.query;
+  const { id } = req.query;
+  const { sectionName, students, subjects } = req.body;
 
-  if (!id) return next(new AppError("Appointment identifier not found", 400));
+  if (!id) return next(new AppError("Section identifier not found", 400));
+  if (!sectionName && !students && !subjects)
+    return next(new AppError("No data to update", 400));
 
-  const updatedAppointment = await Appointment.findByIdAndUpdate(
+  const section = await Section.findById(id)
+    .populate("students")
+    .populate("subjects");
+
+  if (!section)
+    return next(new AppError("Section not found. Invalid Section ID.", 404));
+
+  let newSectionName,
+    updates = {
+      students: [],
+      subjects: [],
+    };
+
+  if (sectionName) newSectionName = sectionName;
+  if (students) {
+    updates.students = students.filter(
+      (student) => !section.students.some((s) => s._id.toString() === student)
+    );
+  }
+  if (subjects) {
+    updates.subjects = subjects.filter(
+      (subjects) => !section.subjects.some((s) => s._id.toString() === subjects)
+    );
+  }
+
+  const updatedSection = await Section.findByIdAndUpdate(
     id,
-    { $set: req.body },
+    {
+      sectionName: newSectionName,
+      $push: {
+        students: { $each: updates.students },
+        subjects: { $each: updates.subjects },
+      },
+    },
     { new: true }
   );
 
-  if (!updatedAppointment) {
-    return next(new AppError("Appointment not found", 404));
+  if (!updatedSection) {
+    return next(new AppError("Section not found", 404));
   }
 
-  const user = await User.findById(userId);
-
-  // Send Notification by Appointment Status
-  if (updatedAppointment.status === "Confirmed") {
-    const newNotification = new Notification({
-      senderId: user._id,
-      senderName: `${user.fullName}`,
-      senderPhoneNumber: `${user.phoneNumber}`,
-      message: `Your appointment scheduled on ${formatAppointmentDate(
-        updatedAppointment.date
-      )} has been confirmed!`,
-      recipientUserId: updatedAppointment.userId,
-    });
-
-    await newNotification.save();
-  } else if (updatedAppointment.status === "Cancelled") {
-    const newNotification = new Notification({
-      senderId: user._id,
-      senderName: `${user.fullName}`,
-      senderPhoneNumber: `${user.phoneNumber}`,
-      message: `Your appointment scheduled on ${formatAppointmentDate(
-        updatedAppointment.date
-      )} has been cancelled.`,
-      recipientUserId: updatedAppointment.userId,
-    });
-
-    await newNotification.save();
-  } else if (updatedAppointment.status === "Rescheduled") {
-    const newNotification = new Notification({
-      senderId: user._id,
-      senderName: `${user.fullName}`,
-      senderPhoneNumber: `${user.phoneNumber}`,
-      message: `The appointment has been moved. Please select another date and time that fits your schedule.`,
-      recipientUserId: updatedAppointment.userId,
-    });
-
-    await newNotification.save();
-
-    const users = await User.find({ role: "Assistant" }, "_id");
-    const recipientUserIds = users.map((user) => user._id);
-    await Notification.create({
-      senderName: `MatriCare`,
-      message: `There are changes in the Appointment. Look it up!`,
-      recipientUserId: recipientUserIds,
-    });
-  }
   return res
     .status(200)
-    .json({ message: "Appointment Updated Successfully", updatedAppointment });
+    .json({ message: "Section Updated Successfully", updatedSection });
 });
 
-// Delete Appointment
+// Delete Section
 const section_delete = catchAsync(async (req, res, next) => {
-  if (!req.query.id)
-    return next(new AppError("Appointment identifier not found", 400));
+  const { id } = req.query;
 
-  const deletedAppointment = await Appointment.findByIdAndDelete(req.query.id);
+  if (!id) return next(new AppError("Section identifier not found", 400));
 
-  if (!deletedAppointment)
-    return next(new AppError("Appointment not found", 404));
+  const deletedSection = await Section.findByIdAndDelete(id);
+
+  if (!deletedSection) return next(new AppError("Section not found", 404));
   return res
     .status(200)
-    .json({ message: "Appointment Successfully Deleted", deletedAppointment });
+    .json({ message: "Section Successfully Deleted", deletedSection });
+});
+
+// Section Enroll
+const section_enroll = catchAsync(async (req, res, next) => {
+  const { id, sectionCode, enroll, unenroll } = req.query;
+  const { userId } = req.body;
+
+  if (!sectionCode && !id)
+    return next(
+      new AppError(
+        "Section identifier not found. Invalid Request Parameters.",
+        400
+      )
+    );
+  if (!enroll && !unenroll)
+    return next(new AppError("Invalid Request Parameters.", 400));
+  if (!userId)
+    return next(
+      new AppError("User ID not found. Invalid Request Parameters.", 400)
+    );
+
+  let section;
+
+  if (id) {
+    section = await Section.findById(id);
+  } else {
+    section = await Section.findOne({
+      sectionCode: sectionCode.toUpperCase(),
+    });
+  }
+
+  if (!section)
+    return next(new AppError("Section not found. Invalid Section Code.", 404));
+
+  let updatedSection;
+
+  if (enroll) {
+    updatedSection = await Section.findByIdAndUpdate(
+      section._id,
+      { $push: { students: userId } },
+      { new: true }
+    );
+  } else {
+    updatedSection = await Section.findByIdAndUpdate(
+      section._id,
+      { $pull: { students: userId } },
+      { new: true }
+    );
+  }
+
+  if (!updatedSection) {
+    return next(
+      new AppError("Section not found. Section Update Not Successful.", 404)
+    );
+  }
+
+  return res
+    .status(200)
+    .json({ message: "Section Updated Successfully", updatedSection });
 });
 
 module.exports = {
   section_get,
   section_post,
-  section_user_get,
   section_put,
+  section_enroll,
   section_delete,
 };

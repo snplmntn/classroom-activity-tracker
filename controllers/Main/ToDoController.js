@@ -21,6 +21,23 @@ const toDo_get = catchAsync(async (req, res, next) => {
   return res.status(200).json(toDo);
 });
 
+// Get To Do by Id
+const toDo_userGet = catchAsync(async (req, res, next) => {
+  const { userId } = req.query;
+
+  if (!userId) return next(new AppError("To Do identifier not found", 400));
+
+  const toDo = await ToDo.find({ assignedUsers: userId })
+    .populate("assignedUsers")
+    .populate("submittedUsers")
+    .populate("subject");
+
+  if (!toDo)
+    return next(new AppError("To Do not found. Invalid To Do ID.", 404));
+
+  return res.status(200).json(toDo);
+});
+
 // Create ToDo
 const toDo_post = catchAsync(async (req, res, next) => {
   const { userId } = req.query;
@@ -165,6 +182,7 @@ const toDo_delete = catchAsync(async (req, res, next) => {
 
 module.exports = {
   toDo_get,
+  toDo_userGet,
   toDo_post,
   toDo_put,
   toDo_submit,

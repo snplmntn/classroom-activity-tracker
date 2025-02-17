@@ -81,7 +81,7 @@ const post_login = catchAsync(async (req, res, next) => {
 
   const user = await User.findOne({
     $or: [{ email: username }, { username }],
-  });
+  }).select("+password");
 
   if (!user) {
     return next(new AppError("User not found", 404));

@@ -18,4 +18,7 @@ const sectionSchema = new mongoose.Schema(
   }
 );
 
+// Index
+sectionSchema.index({ sectionCode: 1 });
+
 module.exports = mongoose.model("Section", sectionSchema);

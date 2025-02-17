@@ -4,12 +4,11 @@ const toDoSchema = new mongoose.Schema(
   {
     toDoName: {
       type: String,
-      required: true,
+      required: [true, "To Do name is required"],
     },
     description: String,
     deadline: {
       type: Date,
-      required: true,
     },
     assignedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     submittedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],

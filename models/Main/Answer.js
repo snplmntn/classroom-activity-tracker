@@ -4,7 +4,7 @@ const answerSchema = new mongoose.Schema(
   {
     content: {
       type: String,
-      required: true,
+      required: [true, "Answer content is required"],
     },
     question: { type: mongoose.Schema.Types.ObjectId, ref: "Question" },
     author: { type: mongoose.Schema.Types.ObjectId, ref: "User" },

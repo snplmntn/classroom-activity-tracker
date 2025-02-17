@@ -4,11 +4,11 @@ const sectionSchema = new mongoose.Schema(
   {
     sectionName: {
       type: String,
-      required: true,
+      required: [true, "Section name is required"],
     },
     sectionCode: {
       type: String,
-      required: true,
+      required: [true, "Subject code is required"],
     },
     students: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     subjects: [{ type: mongoose.Schema.Types.ObjectId, ref: "Subject" }],

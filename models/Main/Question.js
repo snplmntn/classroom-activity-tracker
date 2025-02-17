@@ -4,11 +4,11 @@ const questionSchema = new mongoose.Schema(
   {
     title: {
       type: String,
-      required: true,
+      required: [true, "Question title is required"],
     },
     content: {
       type: String,
-      required: true,
+      required: [true, "Question content is required"],
     },
     category: { type: mongoose.Schema.Types.ObjectId, ref: "Subject" },
     author: { type: mongoose.Schema.Types.ObjectId, ref: "User" },

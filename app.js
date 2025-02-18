@@ -21,6 +21,7 @@ const todoRoute = require("./routes/Main/toDoRoute");
 const aliveRoute = require("./routes/aliveRoute");
 const AppError = require("./utilities/appError");
 const checkAuth = require("./utilities/checkAuth");
+const globalErrorHandler = require("./controllers/ErrorController");
 
 // initializations
 const app = express();
@@ -69,5 +70,6 @@ app.use("/api/alive", aliveRoute);
 app.all("*", (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
 });
+app.use(globalErrorHandler);
 
 module.exports = app;

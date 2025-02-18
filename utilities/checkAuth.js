@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const InvalidToken = require("../models/utilities/InvalidToken");
+const StudentProfile = require("../models/User/StudentProfile");
 const AppError = require("./appError");
 
 const verifyToken = async (req, res, next) => {
@@ -15,11 +16,15 @@ const verifyToken = async (req, res, next) => {
     if (isInvalid) {
       return next(new AppError("Access denied. Invalid Token", 403));
     }
-    // check token if it is valid
+    // check token if valid
     try {
       const decoded = jwt.verify(token, JWT_KEY);
-      req.role = decoded.user.role;
       req.userId = decoded.user._id;
+      // assign user role
+      const studentProfile = await StudentProfile.findOne({
+        user: decoded.user._id,
+      });
+      if (studentProfile) req.role = studentProfile.role;
       next();
     } catch (err) {
       // token expired or invalid

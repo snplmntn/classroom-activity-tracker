@@ -30,29 +30,14 @@ const userSchema = new mongoose.Schema(
       required: [true, "Password is required"],
       select: false,
     },
-    role: {
-      type: String,
-      enum: {
-        values: ["officer", "student", "beadle", "admin"],
-        message: "Role must be one of: Officer, Student, Beadle",
-      },
-      default: "student",
-      lowercase: true,
-    },
-    status: {
-      type: String,
-      enum: {
-        values: ["regular", "irregular"],
-        message: "Status must be either Regular or Irregular",
-      },
-      default: "regular",
-      lowercase: true,
+    studentProfile: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "StudentProfile",
     },
     profilePicture: {
       type: String,
       // add default profile picture
     },
-    section: { type: mongoose.Schema.Types.ObjectId, ref: "Section" },
   },
   {
     timestamps: true,

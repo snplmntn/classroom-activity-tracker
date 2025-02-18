@@ -12,7 +12,11 @@ const subjectSchema = new mongoose.Schema(
     },
     professor: String,
     enrolledStudents: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-    section: { type: mongoose.Schema.Types.ObjectId, ref: "Section" },
+    section: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Section",
+      required: [true, "Section ID is required"],
+    },
   },
   {
     timestamps: true,

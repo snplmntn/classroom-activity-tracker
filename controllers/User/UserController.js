@@ -9,9 +9,9 @@ const user_get = catchAsync(async (req, res, next) => {
   const { id, username } = req.query;
 
   const user = id
-    ? await User.findById(id).populate("section")
-    : await User.findOne({ username: username }).populate("section");
-  const { password, __v, ...other } = user._doc;
+    ? await User.findById(id).populate("studentProfile")
+    : await User.findOne({ username: username }).populate("studentProfile");
+  const { __v, ...other } = user._doc;
 
   if (!user) return next(new AppError("User not found", 404));
 

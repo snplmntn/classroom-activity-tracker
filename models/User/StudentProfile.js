@@ -5,7 +5,7 @@ const studentProfileSchema = new mongoose.Schema(
     role: {
       type: String,
       enum: {
-        values: ["officer", "student", "beadle", "admin"],
+        values: ["president", "vice president","officer", "student", "beadle", "admin"],
         message: "Role must be one of: Officer, Student, Beadle",
       },
       default: "student",

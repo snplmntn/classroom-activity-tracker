@@ -17,7 +17,11 @@ router.post(
 );
 
 // Update To Do
-router.put("/", ToDoController.toDo_put);
+router.put(
+  "/",
+  checkRole("officer", "beadle", "admin"),
+  ToDoController.toDo_put
+);
 
 //Submit To Do
 router.put("/s", ToDoController.toDo_submit);

@@ -35,12 +35,15 @@ const subject_post = catchAsync(async (req, res, next) => {
   if (!isSectionValid)
     return next(new AppError("Section not found. Invalid Section ID.", 404));
 
-  const newSubject = new Subject({
+  const newSubject = await Subject.create({
     ...req.body,
     enrolledStudents: [userId],
   });
 
-  await newSubject.save();
+  // Update Section: Insert new Subject
+  await Section.findByIdAndUpdate(section, {
+    $push: { subjects: newSubject._id },
+  });
 
   return res
     .status(200)

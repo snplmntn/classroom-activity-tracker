@@ -4,16 +4,24 @@ const toDoSchema = new mongoose.Schema(
   {
     toDoName: {
       type: String,
-      required: true,
+      required: [true, "To Do name is required"],
     },
     description: String,
     deadline: {
       type: Date,
-      required: true,
     },
     assignedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     submittedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-    subject: { type: mongoose.Schema.Types.ObjectId, ref: "Subject" },
+    subject: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Subject",
+      required: [true, "To Do Subject ID is required"],
+    },
+    section: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Section",
+      required: [true, "To Do Section ID is required"],
+    },
   },
   {
     timestamps: true,

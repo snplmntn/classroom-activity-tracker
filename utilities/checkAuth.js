@@ -16,10 +16,11 @@ const verifyToken = async (req, res, next) => {
     if (isInvalid) {
       return next(new AppError("Access denied. Invalid Token", 403));
     }
-    // check token if it is valid
+    // check token if valid
     try {
       const decoded = jwt.verify(token, JWT_KEY);
       req.userId = decoded.user._id;
+      // assign user role
       const studentProfile = await StudentProfile.findOne({
         user: decoded.user._id,
       });

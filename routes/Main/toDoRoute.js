@@ -27,6 +27,10 @@ router.put(
 router.put("/s", ToDoController.toDo_submit);
 
 // Delete To Do
-router.delete("/", ToDoController.toDo_delete);
+router.delete(
+  "/",
+  checkRole("officer", "beadle", "admin"),
+  ToDoController.toDo_delete
+);
 
 module.exports = router;

@@ -4,10 +4,18 @@ const answerSchema = new mongoose.Schema(
   {
     content: {
       type: String,
-      required: true,
+      required: [true, "Answer content is required"],
     },
-    question: { type: mongoose.Schema.Types.ObjectId, ref: "Question" },
-    author: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    question: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Question",
+      required: [true, "Question ID is required"],
+    },
+    author: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: [true, "Answer Author ID is required"],
+    },
     upVotes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   },
   {

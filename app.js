@@ -20,6 +20,8 @@ const todoRoute = require("./routes/Main/toDoRoute");
 // utility
 const aliveRoute = require("./routes/aliveRoute");
 const AppError = require("./utilities/appError");
+const checkAuth = require("./utilities/checkAuth");
+const globalErrorHandler = require("./controllers/ErrorController");
 
 // initializations
 const app = express();
@@ -52,14 +54,14 @@ app.use("/api", limiter); //Protection Against DDOS Attack
 // routes
 // user
 app.use("/api/auth", authRoute);
-app.use("/api/user", userRoute);
+app.use("/api/user", checkAuth, userRoute);
 
 // section
-app.use("/api/section", sectionRoute);
-app.use("/api/subject", subjectRoute);
+app.use("/api/section", checkAuth, sectionRoute);
+app.use("/api/subject", checkAuth, subjectRoute);
 
 // main functionalities
-app.use("/api/todo", todoRoute);
+app.use("/api/todo", checkAuth, todoRoute);
 
 // utility
 app.use("/api/alive", aliveRoute);
@@ -68,5 +70,6 @@ app.use("/api/alive", aliveRoute);
 app.all("*", (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
 });
+app.use(globalErrorHandler);
 
 module.exports = app;

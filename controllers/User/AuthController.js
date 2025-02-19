@@ -1,4 +1,5 @@
 const User = require("../../models/User/User");
+const InvalidToken = require("../../models/utilities/InvalidToken");
 const AppError = require("../../utilities/appError");
 const catchAsync = require("../../utilities/catchAsync");
 const bcrypt = require("bcrypt");
@@ -73,7 +74,27 @@ const post_login = catchAsync(async (req, res, next) => {
   });
 });
 
+// Logout route
+const post_logout = catchAsync(async (req, res, next) => {
+  const authHeader = req.header("Authorization");
+  const token = authHeader.split(" ")[1]; // get token from header
+
+  const verify = jwt.verify(token, process.env.JWT_KEY);
+  if (!verify) {
+    return next(new AppError("Invalid Token", 403));
+  }
+
+  const invalidToken = await InvalidToken.create({
+    token: token,
+  });
+
+  return res
+    .status(200)
+    .json({ message: "Logged Out Successfully", invalidToken });
+});
+
 module.exports = {
   post_sign_up,
   post_login,
+  post_logout,
 };

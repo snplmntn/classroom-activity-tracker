@@ -8,7 +8,9 @@ const sectionSchema = new mongoose.Schema(
     },
     sectionCode: {
       type: String,
-      required: [true, "Subject code is required"],
+      required: [true, "Section code is required"],
+      lowercase: true,
+      unique: [true, "Section code already exists"],
     },
     students: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     subjects: [{ type: mongoose.Schema.Types.ObjectId, ref: "Subject" }],

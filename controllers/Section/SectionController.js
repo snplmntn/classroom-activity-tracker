@@ -12,16 +12,41 @@ const generateCode = (length) => {
 
 // Get Section by Id
 const section_get = catchAsync(async (req, res, next) => {
-  const { id } = req.query;
+  const { id, code } = req.query;
 
-  if (!id) return next(new AppError("Section identifier not found", 400));
+  if (!id && !code)
+    return next(new AppError("Section identifier not found.", 400));
 
-  const section = await Section.findById(id)
-    .populate("students")
-    .populate("subjects");
+  let section;
+  if (id) {
+    section = await Section.findById(id)
+      .populate({
+        path: "students",
+        populate: {
+          path: "studentProfile",
+        },
+      })
+      .populate("subjects");
+  } else if (code) {
+    section = await Section.findOne({ sectionCode: code.toLowerCase() })
+      .populate({
+        path: "students",
+        populate: {
+          path: "studentProfile",
+        },
+      })
+      .populate("subjects");
+
+    console.log(section);
+  }
 
   if (!section)
-    return next(new AppError("Section not found. Invalid Section ID.", 404));
+    return next(
+      new AppError(
+        "Section not found. Invalid Section ID or Section Code.",
+        404
+      )
+    );
 
   return res.status(200).json(section);
 });
@@ -34,7 +59,7 @@ const section_post = catchAsync(async (req, res, next) => {
   if (!isUserValid)
     return next(new AppError("User not found. Invalid User ID.", 404));
 
-  req.body.sectionCode = generateCode(6).toUpperCase();
+  req.body.sectionCode = generateCode(6);
 
   const newSection = await Section.create({
     ...req.body,
@@ -158,7 +183,7 @@ const section_enroll = catchAsync(async (req, res, next) => {
     section = await Section.findById(id);
   } else {
     section = await Section.findOne({
-      sectionCode: sectionCode.toUpperCase(),
+      sectionCode: sectionCode.toLowerCase(),
     });
   }
 

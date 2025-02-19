@@ -5,21 +5,25 @@ const AppError = require("./appError");
 
 const verifyToken = async (req, res, next) => {
   const JWT_KEY = process.env.JWT_KEY;
-  const token = req.header("Authorization"); // get token from header
-  if (!token) {
+  const authHeader = req.header("Authorization");
+  if (!authHeader) {
     // send back user if no token is provided
     return res
       .status(401)
       .json({ message: "Access denied. No token provided." });
   } else {
+    const token = authHeader.split(" ")[1]; // get token from header
     const isInvalid = await InvalidToken.findOne({ token: token });
+
     if (isInvalid) {
       return next(new AppError("Access denied. Invalid Token", 403));
     }
+
     // check token if valid
     try {
       const decoded = jwt.verify(token, JWT_KEY);
       req.userId = decoded.user._id;
+
       // assign user role
       const studentProfile = await StudentProfile.findOne({
         user: decoded.user._id,
